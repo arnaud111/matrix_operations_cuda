@@ -1,3 +1,3 @@
 extern "C" __global__ void add(const float* input, float* output) {
-    output[0] = 4.0;
+    output[threadIdx.x] = input[threadIdx.x] + 1;
 }
