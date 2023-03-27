@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::format;
-use cuda_driver_sys::{CUfunction, CUmodule, cuModuleGetFunction, cuModuleLoad, CUresult};
+use cuda_driver_sys::{CUfunction, CUmodule, cuModuleGetFunction, cuModuleLoad, cuModuleUnload, CUresult};
 
 pub struct CudaModule {
-    hmod: CUmodule,
-    functions: HashMap<String, CUfunction>
+    pub(crate) hmod: CUmodule,
+    pub(crate) functions: HashMap<String, CUfunction>
 }
 
 impl CudaModule {
@@ -29,6 +29,14 @@ impl CudaModule {
             return Err(format!("Error loading function: {:?}", result).into());
         }
         self.functions.insert(String::from_utf8(name.to_vec())?, hfunc);
+        Ok(())
+    }
+
+    pub unsafe fn free(&mut self) -> Result<(), Box<dyn Error>> {
+        let result = cuModuleUnload(self.hmod);
+        if result != CUresult::CUDA_SUCCESS {
+            return Err(format!("Error unloading module : {:?}", result).into());
+        }
         Ok(())
     }
 }
