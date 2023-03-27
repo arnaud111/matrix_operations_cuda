@@ -73,7 +73,7 @@ impl CudaEnv {
     ///     cuda_env = CudaEnv::new(0, 0).unwrap();
     ///
     ///     let functions = vec!["add".to_string()];
-    ///     cuda_env.load_module("resources/kernel.ptx".to_string(), "kernel".to_string(), functions).unwrap();
+    ///     cuda_env.load_module("resources/kernel_float.ptx".to_string(), "kernel".to_string(), functions).unwrap();
     ///
     ///     cuda_env.free().unwrap();
     /// }
@@ -100,8 +100,8 @@ impl CudaEnv {
     /// unsafe {
     ///     cuda_env = CudaEnv::new(0, 0).unwrap();
     ///
-    ///     let functions = vec!["add".to_string()];
-    ///     cuda_env.load_module("resources/kernel.ptx".to_string(), "kernel".to_string(), functions).unwrap();
+    ///     let functions = vec!["add_scalar".to_string()];
+    ///     cuda_env.load_module("resources/kernel_float.ptx".to_string(), "kernel".to_string(), functions).unwrap();
     ///
     ///     let data = [1.0f32, 2.0f32, 3.0f32, 4.0f32];
     ///     let device_ptr_in = cuda_env.allocate(data.len() * size_of::<f32>()).unwrap();
@@ -110,12 +110,14 @@ impl CudaEnv {
     ///     let device_ptr_out = cuda_env.allocate(data.len() * size_of::<f32>()).unwrap();
     ///     cuda_env.set_empty_device_data(device_ptr_out, data.len() * size_of::<f32>()).unwrap();
     ///
+    ///     let scalar = 1.0f32;
     ///     let args = [
     ///         &device_ptr_in as *const _ as *mut c_void,
-    ///         &device_ptr_out as *const _ as *mut c_void
+    ///         &device_ptr_out as *const _ as *mut c_void,
+    ///         &scalar as *const _ as *mut c_void
     ///     ];
     ///
-    ///     cuda_env.launch("kernel".to_string(), "add".to_string(), &args, (1, 1, 1), (data.len() as u32, 1, 1)).unwrap();
+    ///     cuda_env.launch("kernel".to_string(), "add_scalar".to_string(), &args, (1, 1, 1), (data.len() as u32, 1, 1)).unwrap();
     ///
     ///     let mut result = [0.0f32; 4];
     ///     cuda_env.copy_device_to_host(&mut result, device_ptr_out).unwrap();
@@ -225,8 +227,8 @@ impl CudaEnv {
     /// unsafe {
     ///     cuda_env = CudaEnv::new(0, 0).unwrap();
     ///
-    ///     let functions = vec!["add".to_string()];
-    ///     cuda_env.load_module("resources/kernel.ptx".to_string(), "kernel".to_string(), functions).unwrap();
+    ///     let functions = vec!["add_scalar".to_string()];
+    ///     cuda_env.load_module("resources/kernel_float.ptx".to_string(), "kernel".to_string(), functions).unwrap();
     ///
     ///     let data = [1.0f32, 2.0f32, 3.0f32, 4.0f32];
     ///     let device_ptr_in = cuda_env.allocate(data.len() * size_of::<f32>()).unwrap();
@@ -235,12 +237,14 @@ impl CudaEnv {
     ///     let device_ptr_out = cuda_env.allocate(data.len() * size_of::<f32>()).unwrap();
     ///     cuda_env.set_empty_device_data(device_ptr_out, data.len() * size_of::<f32>()).unwrap();
     ///
+    ///     let scalar = 1.0f32;
     ///     let args = [
     ///         &device_ptr_in as *const _ as *mut c_void,
-    ///         &device_ptr_out as *const _ as *mut c_void
+    ///         &device_ptr_out as *const _ as *mut c_void,
+    ///         &scalar as *const _ as *mut c_void
     ///     ];
     ///
-    ///     cuda_env.launch("kernel".to_string(), "add".to_string(), &args, (1, 1, 1), (data.len() as u32, 1, 1)).unwrap();
+    ///     cuda_env.launch("kernel".to_string(), "add_scalar".to_string(), &args, (1, 1, 1), (data.len() as u32, 1, 1)).unwrap();
     ///
     ///     let mut result = [0.0f32; 4];
     ///     cuda_env.copy_device_to_host(&mut result, device_ptr_out).unwrap();
@@ -387,7 +391,7 @@ impl CudaEnv {
     ///     cuda_env = CudaEnv::new(0, 0).unwrap();
     ///
     ///     let functions = vec!["add".to_string()];
-    ///     cuda_env.load_module("resources/kernel.ptx".to_string(), "kernel".to_string(), functions).unwrap();
+    ///     cuda_env.load_module("resources/kernel_float.ptx".to_string(), "kernel".to_string(), functions).unwrap();
     ///
     ///     cuda_env.free_module("kernel".to_string()).unwrap();
     ///     cuda_env.free().unwrap();
