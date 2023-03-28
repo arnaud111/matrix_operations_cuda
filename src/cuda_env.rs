@@ -1,9 +1,8 @@
-use std::collections::HashMap;
 use std::error::Error;
 use std::ffi::{c_int, c_uint, c_void};
 use std::mem::size_of;
-use cuda_driver_sys::{CUcontext, cuCtxCreate_v2, cuCtxDestroy_v2, cuCtxPushCurrent_v2, cuCtxSynchronize, CUdevice, cuDeviceGet, CUdeviceptr, CUfunction, cuInit, cuLaunchKernel, cuMemAlloc_v2, cuMemcpyDtoH_v2, cuMemcpyHtoD_v2, cuMemFree_v2, cuMemsetD8_v2, CUresult};
-use crate::cuda_module::CudaModule;
+use cuda_driver_sys::{CUcontext, cuCtxCreate_v2, cuCtxDestroy_v2, cuCtxPushCurrent_v2, cuCtxSynchronize, CUdevice, CUdevice_attribute_enum, cuDeviceGet, cuDeviceGetAttribute, CUdeviceptr, CUfunction, cuInit, cuLaunchKernel, cuMemAlloc_v2, cuMemcpyDtoH_v2, cuMemcpyHtoD_v2, cuMemFree_v2, cuMemsetD8_v2, CUresult};
+
 pub struct CudaEnv {
     ctx: CUcontext,
     device: CUdevice
@@ -54,6 +53,97 @@ impl CudaEnv {
             ctx,
             device
         })
+    }
+
+    /// Get max threads per block
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use matrix_operations_cuda::cuda_env::CudaEnv;
+    ///
+    /// let mut cuda_env: CudaEnv;
+    ///
+    /// unsafe {
+    ///     cuda_env = CudaEnv::new(0, 0).unwrap();
+    ///
+    ///     let max_threads_per_block = cuda_env.get_max_threads_per_block();
+    ///     println!("Max threads per block: {}", max_threads_per_block);
+    ///
+    ///     cuda_env.free().unwrap();
+    /// }
+    /// ```
+    pub unsafe fn get_max_threads_per_block(&self) -> usize {
+        let mut max_threads_per_block: i32 = 0;
+        cuDeviceGetAttribute(&mut max_threads_per_block as *mut c_int, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, self.device);
+        max_threads_per_block as usize
+    }
+
+    /// Get max block per grid
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use matrix_operations_cuda::cuda_env::CudaEnv;
+    ///
+    /// let mut cuda_env: CudaEnv;
+    ///
+    /// unsafe {
+    ///     cuda_env = CudaEnv::new(0, 0).unwrap();
+    ///
+    ///     let max_block_per_grid = cuda_env.get_max_block_per_grid();
+    ///     println!("Max block per grid: {}", max_block_per_grid);
+    ///
+    ///     cuda_env.free().unwrap();
+    /// }
+    /// ```
+    pub unsafe fn get_max_block_per_grid(&self) -> usize {
+        let mut max_block_per_grid: i32 = 0;
+        cuDeviceGetAttribute(&mut max_block_per_grid as *mut c_int, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_X, self.device);
+        max_block_per_grid as usize
+    }
+
+    /// Get grid_size and block_size
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use matrix_operations_cuda::cuda_env::CudaEnv;
+    ///
+    /// let mut cuda_env: CudaEnv;
+    ///
+    /// unsafe {
+    ///     cuda_env = CudaEnv::new(0, 0).unwrap();
+    ///
+    ///     let max_threads_per_block = cuda_env.get_max_threads_per_block(); // 1024
+    ///     let max_block_per_grid = cuda_env.get_max_block_per_grid();
+    ///
+    ///     let (block_dim, grid_dim) = CudaEnv::get_block_and_grid_dim(2000, max_threads_per_block, max_block_per_grid);
+    ///
+    ///     assert_eq!(block_dim, (32, 32, 1));
+    ///     assert_eq!(grid_dim, (2, 1, 1));
+    ///
+    ///     cuda_env.free().unwrap();
+    /// }
+    /// ```
+    pub unsafe fn get_block_and_grid_dim(data_len: usize, max_threads: usize, max_block: usize) -> ((usize, usize, usize), (usize, usize, usize)) {
+        if is_perfect_square(max_threads) {
+            let block_dim = (max_threads as f32).sqrt() as usize;
+            let grid_dim = (data_len as f32 / max_threads as f32).ceil() as usize;
+
+            if grid_dim <= max_block {
+                return ((block_dim, block_dim, 1), (grid_dim, 1, 1));
+            }
+        } else {
+            let block_dim = max_threads;
+            let grid_dim = (data_len as f32 / max_threads as f32).ceil() as usize;
+
+            if grid_dim <= max_block {
+                return ((block_dim, 1, 1), (grid_dim, 1, 1));
+            }
+        }
+
+        ((1, 1, 1), (1, 1, 1))
     }
 
     /// Launch a CUDA kernel
@@ -355,4 +445,9 @@ impl CudaEnv {
         cuCtxDestroy_v2(self.ctx);
         Ok(())
     }
+}
+
+fn is_perfect_square(num: usize) -> bool {
+    let sqrt_num = (num as f64).sqrt() as usize;
+    return sqrt_num * sqrt_num == num;
 }
