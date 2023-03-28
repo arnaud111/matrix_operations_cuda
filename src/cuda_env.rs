@@ -2,11 +2,9 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::ffi::{c_int, c_uint, c_void};
 use std::mem::size_of;
-use cuda_driver_sys::{CUcontext, cuCtxCreate_v2, cuCtxDestroy_v2, cuCtxPushCurrent_v2, cuCtxSynchronize, CUdevice, cuDeviceGet, CUdeviceptr, cuInit, cuLaunchKernel, cuMemAlloc_v2, cuMemcpyDtoH_v2, cuMemcpyHtoD_v2, cuMemFree_v2, cuMemsetD8_v2, CUresult};
+use cuda_driver_sys::{CUcontext, cuCtxCreate_v2, cuCtxDestroy_v2, cuCtxPushCurrent_v2, cuCtxSynchronize, CUdevice, cuDeviceGet, CUdeviceptr, CUfunction, cuInit, cuLaunchKernel, cuMemAlloc_v2, cuMemcpyDtoH_v2, cuMemcpyHtoD_v2, cuMemFree_v2, cuMemsetD8_v2, CUresult};
 use crate::cuda_module::CudaModule;
-
 pub struct CudaEnv {
-    modules: HashMap<String, CudaModule>,
     ctx: CUcontext,
     device: CUdevice
 }
@@ -31,7 +29,6 @@ impl CudaEnv {
     pub unsafe fn new(flags: c_uint, ordinal: c_int) -> Result<CudaEnv, Box<dyn Error>> {
         let mut ctx: CUcontext = std::ptr::null_mut();
         let mut device: CUdevice = CUdevice::default();
-        let modules = HashMap::new();
 
         let mut result = cuInit(flags);
         if result != CUresult::CUDA_SUCCESS {
@@ -54,37 +51,9 @@ impl CudaEnv {
         }
 
         Ok(CudaEnv {
-            modules,
             ctx,
             device
         })
-    }
-
-    /// Load a CUDA module
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use matrix_operations_cuda::cuda_env::CudaEnv;
-    ///
-    /// let mut cuda_env: CudaEnv;
-    ///
-    /// unsafe {
-    ///     cuda_env = CudaEnv::new(0, 0).unwrap();
-    ///
-    ///     let functions = vec!["add".to_string()];
-    ///     cuda_env.load_module("resources/kernel_float.ptx".to_string(), "kernel".to_string(), functions).unwrap();
-    ///
-    ///     cuda_env.free().unwrap();
-    /// }
-    /// ```
-    pub unsafe fn load_module(&mut self, path: String, name: String, functions: Vec<String>) -> Result<(), Box<dyn Error>> {
-        let mut module = CudaModule::new(path.as_bytes())?;
-        for function in functions {
-            module.load_function(function.as_bytes())?;
-        }
-        self.modules.insert(name, module);
-        Ok(())
     }
 
     /// Launch a CUDA kernel
@@ -95,13 +64,14 @@ impl CudaEnv {
     /// use std::ffi::c_void;
     /// use std::mem::size_of;
     /// use matrix_operations_cuda::cuda_env::CudaEnv;
+    /// use matrix_operations_cuda::cuda_module::CudaModule;
     ///
     /// let mut cuda_env: CudaEnv;
     /// unsafe {
     ///     cuda_env = CudaEnv::new(0, 0).unwrap();
     ///
-    ///     let functions = vec!["add_scalar".to_string()];
-    ///     cuda_env.load_module("resources/kernel_float.ptx".to_string(), "kernel".to_string(), functions).unwrap();
+    ///     let module = CudaModule::new(b"resources/kernel.ptx\0").unwrap();
+    ///     let function = module.load_function(b"add_scalar\0").unwrap();
     ///
     ///     let data = [1.0f32, 2.0f32, 3.0f32, 4.0f32];
     ///     let device_ptr_in = cuda_env.allocate(data.len() * size_of::<f32>()).unwrap();
@@ -117,20 +87,21 @@ impl CudaEnv {
     ///         &scalar as *const _ as *mut c_void
     ///     ];
     ///
-    ///     cuda_env.launch("kernel".to_string(), "add_scalar".to_string(), &args, (1, 1, 1), (data.len() as u32, 1, 1)).unwrap();
+    ///     cuda_env.launch(function, &args, (1, 1, 1), (data.len() as u32, 1, 1)).unwrap();
     ///
     ///     let mut result = [0.0f32; 4];
     ///     cuda_env.copy_device_to_host(&mut result, device_ptr_out).unwrap();
     ///
     ///     assert_eq!(result, [2.0f32, 3.0f32, 4.0f32, 5.0f32]);
     ///
+    ///     module.free().unwrap();
     ///     cuda_env.free().unwrap();
     /// }
     /// ```
-    pub unsafe fn launch(&self, module: String, function: String, args: &[*mut c_void], grid_size: (c_uint, c_uint, c_uint), bloc_size: (c_uint, c_uint, c_uint)) -> Result<(), Box<dyn Error>> {
+    pub unsafe fn launch(&self, function: CUfunction, args: &[*mut c_void], grid_size: (c_uint, c_uint, c_uint), bloc_size: (c_uint, c_uint, c_uint)) -> Result<(), Box<dyn Error>> {
 
         let result = cuLaunchKernel(
-            self.modules[&module].functions[&function],
+            function,
             grid_size.0, grid_size.1, grid_size.2,
             bloc_size.0, bloc_size.1, bloc_size.2,
             0,
@@ -148,6 +119,8 @@ impl CudaEnv {
         if result != CUresult::CUDA_SUCCESS {
             return Err(format!("Error synchronizing kernel : {:?}", result).into());
         }
+
+        cuCtxSynchronize();
 
         Ok(())
     }
@@ -179,6 +152,7 @@ impl CudaEnv {
         if result != CUresult::CUDA_SUCCESS {
             return Err(format!("Error allocating memory : {:?}", result).into());
         }
+        cuCtxSynchronize();
 
         Ok(device_ptr)
     }
@@ -210,6 +184,7 @@ impl CudaEnv {
         if result != CUresult::CUDA_SUCCESS {
             return Err(format!("Error copy data into device : {:?}", result).into());
         }
+        cuCtxSynchronize();
 
         Ok(())
     }
@@ -222,13 +197,14 @@ impl CudaEnv {
     /// use std::ffi::c_void;
     /// use std::mem::size_of;
     /// use matrix_operations_cuda::cuda_env::CudaEnv;
+    /// use matrix_operations_cuda::cuda_module::CudaModule;
     ///
     /// let mut cuda_env: CudaEnv;
     /// unsafe {
     ///     cuda_env = CudaEnv::new(0, 0).unwrap();
     ///
-    ///     let functions = vec!["add_scalar".to_string()];
-    ///     cuda_env.load_module("resources/kernel_float.ptx".to_string(), "kernel".to_string(), functions).unwrap();
+    ///     let module = CudaModule::new(b"resources/kernel.ptx\0").unwrap();
+    ///     let function = module.load_function(b"add_scalar\0").unwrap();
     ///
     ///     let data = [1.0f32, 2.0f32, 3.0f32, 4.0f32];
     ///     let device_ptr_in = cuda_env.allocate(data.len() * size_of::<f32>()).unwrap();
@@ -244,13 +220,14 @@ impl CudaEnv {
     ///         &scalar as *const _ as *mut c_void
     ///     ];
     ///
-    ///     cuda_env.launch("kernel".to_string(), "add_scalar".to_string(), &args, (1, 1, 1), (data.len() as u32, 1, 1)).unwrap();
+    ///     cuda_env.launch(function, &args, (1, 1, 1), (data.len() as u32, 1, 1)).unwrap();
     ///
     ///     let mut result = [0.0f32; 4];
     ///     cuda_env.copy_device_to_host(&mut result, device_ptr_out).unwrap();
     ///
     ///     assert_eq!(result, [2.0f32, 3.0f32, 4.0f32, 5.0f32]);
     ///
+    ///     module.free().unwrap();
     ///     cuda_env.free().unwrap();
     /// }
     /// ```
@@ -260,6 +237,7 @@ impl CudaEnv {
         if result != CUresult::CUDA_SUCCESS {
             return Err(format!("Error copy data into device : {:?}", result).into());
         }
+        cuCtxSynchronize();
 
         Ok(())
     }
@@ -291,6 +269,7 @@ impl CudaEnv {
         if result != CUresult::CUDA_SUCCESS {
             return Err(format!("Error setting empty data into device : {:?}", result).into());
         }
+        cuCtxSynchronize();
 
         Ok(())
     }
@@ -322,6 +301,7 @@ impl CudaEnv {
         for device_ptr in device_ptrs {
             self.free_data(*device_ptr)?;
         }
+        cuCtxSynchronize();
         Ok(())
     }
 
@@ -351,6 +331,7 @@ impl CudaEnv {
         if result != CUresult::CUDA_SUCCESS {
             return Err(format!("Error freeing data : {:?}", result).into());
         }
+        cuCtxSynchronize();
 
         Ok(())
     }
@@ -371,35 +352,7 @@ impl CudaEnv {
     /// }
     /// ```
     pub unsafe fn free(&mut self) -> Result<(), Box<dyn Error>> {
-        for (_, module) in self.modules.iter_mut() {
-            module.free()?;
-        }
         cuCtxDestroy_v2(self.ctx);
-        Ok(())
-    }
-
-    /// Free CUDA module
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use matrix_operations_cuda::cuda_env::CudaEnv;
-    ///
-    /// let mut cuda_env: CudaEnv;
-    ///
-    /// unsafe {
-    ///     cuda_env = CudaEnv::new(0, 0).unwrap();
-    ///
-    ///     let functions = vec!["add".to_string()];
-    ///     cuda_env.load_module("resources/kernel_float.ptx".to_string(), "kernel".to_string(), functions).unwrap();
-    ///
-    ///     cuda_env.free_module("kernel".to_string()).unwrap();
-    ///     cuda_env.free().unwrap();
-    /// }
-    /// ```
-    pub unsafe fn free_module(&mut self, name: String) -> Result<(), Box<dyn Error>> {
-        let mut module = self.modules.remove(&name).unwrap();
-        module.free()?;
         Ok(())
     }
 }
