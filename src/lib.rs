@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::ffi::c_void;
 use std::mem::size_of;
+use cuda_driver_sys::CUfunction;
 use matrix_operations::Matrix;
 use crate::cuda_env::CudaEnv;
 use crate::cuda_module::CudaModule;
@@ -32,6 +33,94 @@ pub unsafe fn add_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"add_scalar\0")?;
+    function_scalar(matrix, scalar, cuda_env, function)
+}
+
+/// Subtract a scalar to a matrix
+///
+/// # Example
+///
+/// ```
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::sub_scalar;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let matrix = matrix![[1.0f32, 2.00f32],
+///                          [3.00f32, 4.00f32]];
+///
+///     let result = sub_scalar(&matrix, 2.0, &mut cuda_env).unwrap();
+///
+///     assert_eq!(result[0], [-1.00f32, 0.00f32]);
+///     assert_eq!(result[1], [1.00f32, 2.00f32]);
+/// }
+/// ```
+pub unsafe fn sub_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
+
+    let module = CudaModule::new(b"resources/kernel.ptx\0")?;
+    let function = module.load_function(b"sub_scalar\0")?;
+    function_scalar(matrix, scalar, cuda_env, function)
+}
+
+/// Multiply a scalar to a matrix
+///
+/// # Example
+///
+/// ```
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::mul_scalar;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let matrix = matrix![[1.0f32, 2.00f32],
+///                          [3.00f32, 4.00f32]];
+///
+///     let result = mul_scalar(&matrix, 2.0, &mut cuda_env).unwrap();
+///
+///     assert_eq!(result[0], [2.00f32, 4.00f32]);
+///     assert_eq!(result[1], [6.00f32, 8.00f32]);
+/// }
+/// ```
+pub unsafe fn mul_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
+
+    let module = CudaModule::new(b"resources/kernel.ptx\0")?;
+    let function = module.load_function(b"mul_scalar\0")?;
+    function_scalar(matrix, scalar, cuda_env, function)
+}
+
+/// Divide a scalar to a matrix
+///
+/// # Example
+///
+/// ```
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::div_scalar;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let matrix = matrix![[1.0f32, 2.00f32],
+///                          [3.00f32, 4.00f32]];
+///
+///     let result = div_scalar(&matrix, 2.0, &mut cuda_env).unwrap();
+///
+///     assert_eq!(result[0], [0.50f32, 1.00f32]);
+///     assert_eq!(result[1], [1.50f32, 2.00f32]);
+/// }
+/// ```
+pub unsafe fn div_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
+
+    let module = CudaModule::new(b"resources/kernel.ptx\0")?;
+    let function = module.load_function(b"div_scalar\0")?;
+    function_scalar(matrix, scalar, cuda_env, function)
+}
+
+unsafe fn function_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
     let mut matrix_data = matrix.as_slice();
 
     let max_threads_per_block = cuda_env.get_max_threads_per_block();
@@ -56,4 +145,3 @@ pub unsafe fn add_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 
     Matrix::from_slice(result.as_slice(), matrix.shape())
 }
-
