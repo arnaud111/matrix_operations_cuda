@@ -19,7 +19,7 @@
 )
 {
 	.reg .f32 	%f<4>;
-	.reg .b32 	%r<2>;
+	.reg .b32 	%r<8>;
 	.reg .b64 	%rd<11>;
 
 
@@ -30,7 +30,13 @@
 	cvta.to.global.u64 	%rd5, %rd2;
 	cvta.to.global.u64 	%rd6, %rd1;
 	mov.u32 	%r1, %tid.x;
-	mul.wide.u32 	%rd7, %r1, 4;
+	mov.u32 	%r2, %tid.y;
+	mov.u32 	%r3, %ntid.x;
+	mov.u32 	%r4, %ctaid.x;
+	mov.u32 	%r5, %ntid.y;
+	mad.lo.s32 	%r6, %r5, %r4, %r2;
+	mad.lo.s32 	%r7, %r6, %r3, %r1;
+	mul.wide.s32 	%rd7, %r7, 4;
 	add.s64 	%rd8, %rd6, %rd7;
 	ld.global.f32 	%f1, [%rd8];
 	add.s64 	%rd9, %rd5, %rd7;
@@ -49,7 +55,7 @@
 )
 {
 	.reg .f32 	%f<4>;
-	.reg .b32 	%r<2>;
+	.reg .b32 	%r<8>;
 	.reg .b64 	%rd<11>;
 
 
@@ -60,7 +66,13 @@
 	cvta.to.global.u64 	%rd5, %rd2;
 	cvta.to.global.u64 	%rd6, %rd1;
 	mov.u32 	%r1, %tid.x;
-	mul.wide.u32 	%rd7, %r1, 4;
+	mov.u32 	%r2, %tid.y;
+	mov.u32 	%r3, %ntid.x;
+	mov.u32 	%r4, %ctaid.x;
+	mov.u32 	%r5, %ntid.y;
+	mad.lo.s32 	%r6, %r5, %r4, %r2;
+	mad.lo.s32 	%r7, %r6, %r3, %r1;
+	mul.wide.s32 	%rd7, %r7, 4;
 	add.s64 	%rd8, %rd6, %rd7;
 	ld.global.f32 	%f1, [%rd8];
 	add.s64 	%rd9, %rd5, %rd7;
@@ -79,7 +91,7 @@
 )
 {
 	.reg .f32 	%f<4>;
-	.reg .b32 	%r<2>;
+	.reg .b32 	%r<8>;
 	.reg .b64 	%rd<11>;
 
 
@@ -90,7 +102,13 @@
 	cvta.to.global.u64 	%rd5, %rd2;
 	cvta.to.global.u64 	%rd6, %rd1;
 	mov.u32 	%r1, %tid.x;
-	mul.wide.u32 	%rd7, %r1, 4;
+	mov.u32 	%r2, %tid.y;
+	mov.u32 	%r3, %ntid.x;
+	mov.u32 	%r4, %ctaid.x;
+	mov.u32 	%r5, %ntid.y;
+	mad.lo.s32 	%r6, %r5, %r4, %r2;
+	mad.lo.s32 	%r7, %r6, %r3, %r1;
+	mul.wide.s32 	%rd7, %r7, 4;
 	add.s64 	%rd8, %rd6, %rd7;
 	ld.global.f32 	%f1, [%rd8];
 	add.s64 	%rd9, %rd5, %rd7;
@@ -109,7 +127,7 @@
 )
 {
 	.reg .f32 	%f<4>;
-	.reg .b32 	%r<2>;
+	.reg .b32 	%r<8>;
 	.reg .b64 	%rd<8>;
 
 
@@ -119,7 +137,13 @@
 	cvta.to.global.u64 	%rd3, %rd2;
 	cvta.to.global.u64 	%rd4, %rd1;
 	mov.u32 	%r1, %tid.x;
-	mul.wide.u32 	%rd5, %r1, 4;
+	mov.u32 	%r2, %tid.y;
+	mov.u32 	%r3, %ntid.x;
+	mov.u32 	%r4, %ctaid.x;
+	mov.u32 	%r5, %ntid.y;
+	mad.lo.s32 	%r6, %r5, %r4, %r2;
+	mad.lo.s32 	%r7, %r6, %r3, %r1;
+	mul.wide.s32 	%rd5, %r7, 4;
 	add.s64 	%rd6, %rd4, %rd5;
 	ld.global.f32 	%f2, [%rd6];
 	add.f32 	%f3, %f2, %f1;
@@ -136,7 +160,7 @@
 )
 {
 	.reg .f32 	%f<4>;
-	.reg .b32 	%r<2>;
+	.reg .b32 	%r<8>;
 	.reg .b64 	%rd<8>;
 
 
@@ -146,7 +170,13 @@
 	cvta.to.global.u64 	%rd3, %rd2;
 	cvta.to.global.u64 	%rd4, %rd1;
 	mov.u32 	%r1, %tid.x;
-	mul.wide.u32 	%rd5, %r1, 4;
+	mov.u32 	%r2, %tid.y;
+	mov.u32 	%r3, %ntid.x;
+	mov.u32 	%r4, %ctaid.x;
+	mov.u32 	%r5, %ntid.y;
+	mad.lo.s32 	%r6, %r5, %r4, %r2;
+	mad.lo.s32 	%r7, %r6, %r3, %r1;
+	mul.wide.s32 	%rd5, %r7, 4;
 	add.s64 	%rd6, %rd4, %rd5;
 	ld.global.f32 	%f2, [%rd6];
 	sub.f32 	%f3, %f2, %f1;
@@ -163,7 +193,7 @@
 )
 {
 	.reg .f32 	%f<4>;
-	.reg .b32 	%r<2>;
+	.reg .b32 	%r<8>;
 	.reg .b64 	%rd<8>;
 
 
@@ -173,7 +203,13 @@
 	cvta.to.global.u64 	%rd3, %rd2;
 	cvta.to.global.u64 	%rd4, %rd1;
 	mov.u32 	%r1, %tid.x;
-	mul.wide.u32 	%rd5, %r1, 4;
+	mov.u32 	%r2, %tid.y;
+	mov.u32 	%r3, %ntid.x;
+	mov.u32 	%r4, %ctaid.x;
+	mov.u32 	%r5, %ntid.y;
+	mad.lo.s32 	%r6, %r5, %r4, %r2;
+	mad.lo.s32 	%r7, %r6, %r3, %r1;
+	mul.wide.s32 	%rd5, %r7, 4;
 	add.s64 	%rd6, %rd4, %rd5;
 	ld.global.f32 	%f2, [%rd6];
 	mul.f32 	%f3, %f2, %f1;
@@ -190,7 +226,7 @@
 )
 {
 	.reg .f32 	%f<4>;
-	.reg .b32 	%r<2>;
+	.reg .b32 	%r<8>;
 	.reg .b64 	%rd<8>;
 
 
@@ -200,7 +236,13 @@
 	cvta.to.global.u64 	%rd3, %rd2;
 	cvta.to.global.u64 	%rd4, %rd1;
 	mov.u32 	%r1, %tid.x;
-	mul.wide.u32 	%rd5, %r1, 4;
+	mov.u32 	%r2, %tid.y;
+	mov.u32 	%r3, %ntid.x;
+	mov.u32 	%r4, %ctaid.x;
+	mov.u32 	%r5, %ntid.y;
+	mad.lo.s32 	%r6, %r5, %r4, %r2;
+	mad.lo.s32 	%r7, %r6, %r3, %r1;
+	mul.wide.s32 	%rd5, %r7, 4;
 	add.s64 	%rd6, %rd4, %rd5;
 	ld.global.f32 	%f2, [%rd6];
 	div.rn.f32 	%f3, %f2, %f1;
@@ -217,7 +259,7 @@
 )
 {
 	.reg .f32 	%f<4>;
-	.reg .b32 	%r<2>;
+	.reg .b32 	%r<8>;
 	.reg .b64 	%rd<8>;
 
 
@@ -227,7 +269,13 @@
 	cvta.to.global.u64 	%rd3, %rd2;
 	cvta.to.global.u64 	%rd4, %rd1;
 	mov.u32 	%r1, %tid.x;
-	mul.wide.u32 	%rd5, %r1, 4;
+	mov.u32 	%r2, %tid.y;
+	mov.u32 	%r3, %ntid.x;
+	mov.u32 	%r4, %ctaid.x;
+	mov.u32 	%r5, %ntid.y;
+	mad.lo.s32 	%r6, %r5, %r4, %r2;
+	mad.lo.s32 	%r7, %r6, %r3, %r1;
+	mul.wide.s32 	%rd5, %r7, 4;
 	add.s64 	%rd6, %rd4, %rd5;
 	ld.global.f32 	%f2, [%rd6];
 	sub.f32 	%f3, %f1, %f2;
@@ -244,7 +292,7 @@
 )
 {
 	.reg .f32 	%f<4>;
-	.reg .b32 	%r<2>;
+	.reg .b32 	%r<8>;
 	.reg .b64 	%rd<8>;
 
 
@@ -254,7 +302,13 @@
 	cvta.to.global.u64 	%rd3, %rd2;
 	cvta.to.global.u64 	%rd4, %rd1;
 	mov.u32 	%r1, %tid.x;
-	mul.wide.u32 	%rd5, %r1, 4;
+	mov.u32 	%r2, %tid.y;
+	mov.u32 	%r3, %ntid.x;
+	mov.u32 	%r4, %ctaid.x;
+	mov.u32 	%r5, %ntid.y;
+	mad.lo.s32 	%r6, %r5, %r4, %r2;
+	mad.lo.s32 	%r7, %r6, %r3, %r1;
+	mul.wide.s32 	%rd5, %r7, 4;
 	add.s64 	%rd6, %rd4, %rd5;
 	ld.global.f32 	%f2, [%rd6];
 	div.rn.f32 	%f3, %f1, %f2;

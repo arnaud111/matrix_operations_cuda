@@ -29,6 +29,33 @@ pub mod cuda_env;
 ///     assert_eq!(result[0], [3.00f32, 4.00f32]);
 ///     assert_eq!(result[1], [5.00f32, 6.00f32]);
 /// }
+/// ```
+///
+/// Works with big matrices:
+///
+/// ```
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::add_scalar;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let mut data = vec![0.0f32; 1000000];
+///     for i in 0..data.len() {
+///         data[i] = i as f32;
+///     }
+///
+///     let matrix = Matrix::new(data.clone(), (1000, 1000)).unwrap();
+///
+///     let result = add_scalar(&matrix, 2.0, &mut cuda_env).unwrap();
+///
+///     let data_result = result.as_slice();
+///     for i in 0..data.len() {
+///         assert_eq!(data_result[i], i as f32 + 2.0);
+///     }
+/// }
+/// ```
 pub unsafe fn add_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
@@ -55,6 +82,32 @@ pub unsafe fn add_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///
 ///     assert_eq!(result[0], [-1.00f32, 0.00f32]);
 ///     assert_eq!(result[1], [1.00f32, 2.00f32]);
+/// }
+/// ```
+///
+/// Works with big matrices:
+///
+/// ```
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::sub_scalar;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let mut data = vec![0.0f32; 1000000];
+///     for i in 0..data.len() {
+///         data[i] = i as f32;
+///     }
+///
+///     let matrix = Matrix::new(data.clone(), (1000, 1000)).unwrap();
+///
+///     let result = sub_scalar(&matrix, 2.0, &mut cuda_env).unwrap();
+///
+///     let data_result = result.as_slice();
+///     for i in 0..data.len() {
+///         assert_eq!(data_result[i], i as f32 - 2.0);
+///     }
 /// }
 /// ```
 pub unsafe fn sub_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
@@ -85,6 +138,32 @@ pub unsafe fn sub_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///     assert_eq!(result[1], [6.00f32, 8.00f32]);
 /// }
 /// ```
+///
+/// Works with big matrices:
+///
+/// ```
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::mul_scalar;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let mut data = vec![0.0f32; 1000000];
+///     for i in 0..data.len() {
+///         data[i] = i as f32;
+///     }
+///
+///     let matrix = Matrix::new(data.clone(), (1000, 1000)).unwrap();
+///
+///     let result = mul_scalar(&matrix, 2.0, &mut cuda_env).unwrap();
+///
+///     let data_result = result.as_slice();
+///     for i in 0..data.len() {
+///         assert_eq!(data_result[i], i as f32 * 2.0);
+///     }
+/// }
+/// ```
 pub unsafe fn mul_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
@@ -111,6 +190,32 @@ pub unsafe fn mul_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///
 ///     assert_eq!(result[0], [0.50f32, 1.00f32]);
 ///     assert_eq!(result[1], [1.50f32, 2.00f32]);
+/// }
+/// ```
+///
+/// Works with big matrices:
+///
+/// ```
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::div_scalar;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let mut data = vec![0.0f32; 1000000];
+///     for i in 0..data.len() {
+///         data[i] = i as f32;
+///     }
+///
+///     let matrix = Matrix::new(data.clone(), (1000, 1000)).unwrap();
+///
+///     let result = div_scalar(&matrix, 2.0, &mut cuda_env).unwrap();
+///
+///     let data_result = result.as_slice();
+///     for i in 0..data.len() {
+///         assert_eq!(data_result[i], i as f32 / 2.0);
+///     }
 /// }
 /// ```
 pub unsafe fn div_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
