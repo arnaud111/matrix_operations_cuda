@@ -18,7 +18,7 @@
 //!     let matrix = matrix![[1.0f32, 2.00f32, 3.0f32],
 //!                          [4.00f32, 5.00f32, 6.0f32]];
 //!
-//!     let result = apply_function_matrix(&matrix, &mut cuda_env, function).unwrap();
+//!     let result = apply_function_matrix(&matrix, &cuda_env, function).unwrap();
 //!
 //!     assert_eq!(result[0], [2.0f32, 4.0f32, 6.0f32]);
 //!     assert_eq!(result[1], [8.0f32, 10.0f32, 12.0f32]);
@@ -59,7 +59,7 @@ use crate::CudaEnv;
 ///     let matrix = matrix![[1.0, 2.0],
 ///                          [3.0, 4.0]];
 ///
-///     let result = apply_function_matrix_scalar(&matrix, 2.0, &mut cuda_env, function).unwrap();
+///     let result = apply_function_matrix_scalar(&matrix, 2.0, &cuda_env, function).unwrap();
 ///
 ///     assert_eq!(result[0], [3.0, 4.0]);
 ///     assert_eq!(result[1], [5.0, 6.0]);
@@ -67,7 +67,7 @@ use crate::CudaEnv;
 ///     module.free().unwrap();
 /// }
 /// ```
-pub unsafe fn apply_function_matrix_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
+pub unsafe fn apply_function_matrix_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
     let matrix_data = matrix.as_slice();
 
     let max_threads_per_block = cuda_env.get_max_threads_per_block();
@@ -124,7 +124,7 @@ pub unsafe fn apply_function_matrix_scalar(matrix: &Matrix<f32>, scalar: f32, cu
 ///     let matrix2 = matrix![[1.0, 2.0],
 ///                           [3.0, 4.0]];
 ///
-///     let result = apply_function_two_matrices(&matrix1, &matrix2, &mut cuda_env, function).unwrap();
+///     let result = apply_function_two_matrices(&matrix1, &matrix2, &cuda_env, function).unwrap();
 ///
 ///     assert_eq!(result[0], [2.0, 4.0]);
 ///     assert_eq!(result[1], [6.0, 8.0]);
@@ -132,7 +132,7 @@ pub unsafe fn apply_function_matrix_scalar(matrix: &Matrix<f32>, scalar: f32, cu
 ///     module.free().unwrap();
 /// }
 /// ```
-pub unsafe fn apply_function_two_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_env: &mut CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
+pub unsafe fn apply_function_two_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_env: &CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
     let matrix1_data = matrix1.as_slice();
     let matrix2_data = matrix2.as_slice();
 
@@ -195,7 +195,7 @@ pub unsafe fn apply_function_two_matrices(matrix1: &Matrix<f32>, matrix2: &Matri
 ///                           [12.00f32, 13.00f32],
 ///                           [14.00f32, 15.00f32]];
 ///
-///     let result = apply_function_two_matrices_with_shapes(&matrix1, &matrix2, (2, 2), &mut cuda_env, function).unwrap();
+///     let result = apply_function_two_matrices_with_shapes(&matrix1, &matrix2, (2, 2), &cuda_env, function).unwrap();
 ///
 ///     assert_eq!(result[0], [76.0f32, 82.0f32]);
 ///     assert_eq!(result[1], [184.0f32, 199.0f32]);
@@ -203,7 +203,7 @@ pub unsafe fn apply_function_two_matrices(matrix1: &Matrix<f32>, matrix2: &Matri
 ///     module.free().unwrap();
 /// }
 /// ```
-pub unsafe fn apply_function_two_matrices_with_shapes(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, returned_shape: (usize, usize), cuda_env: &mut CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
+pub unsafe fn apply_function_two_matrices_with_shapes(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, returned_shape: (usize, usize), cuda_env: &CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
     let matrix1_data = matrix1.as_slice();
     let matrix2_data = matrix2.as_slice();
 
@@ -267,7 +267,7 @@ pub unsafe fn apply_function_two_matrices_with_shapes(matrix1: &Matrix<f32>, mat
 ///     let matrix = matrix![[1.0f32, 2.00f32, 3.0f32],
 ///                          [4.00f32, 5.00f32, 6.0f32]];
 ///
-///     let result = apply_function_matrix(&matrix, &mut cuda_env, function).unwrap();
+///     let result = apply_function_matrix(&matrix, &cuda_env, function).unwrap();
 ///
 ///     assert_eq!(result[0], [2.0f32, 4.0f32, 6.0f32]);
 ///     assert_eq!(result[1], [8.0f32, 10.0f32, 12.0f32]);
@@ -275,7 +275,7 @@ pub unsafe fn apply_function_two_matrices_with_shapes(matrix1: &Matrix<f32>, mat
 ///     module.free().unwrap();
 /// }
 /// ```
-pub unsafe fn apply_function_matrix(matrix: &Matrix<f32>, cuda_env: &mut CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
+pub unsafe fn apply_function_matrix(matrix: &Matrix<f32>, cuda_env: &CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
     let matrix_data = matrix.as_slice();
 
     let max_threads_per_block = cuda_env.get_max_threads_per_block();
@@ -328,14 +328,14 @@ pub unsafe fn apply_function_matrix(matrix: &Matrix<f32>, cuda_env: &mut CudaEnv
 ///     let matrix = matrix![[1.0f32, 2.00f32, 3.0f32],
 ///                          [4.00f32, 5.00f32, 6.0f32]];
 ///
-///     let result = apply_function_matrix_with_shapes(&matrix, (1, 3), &mut cuda_env, function).unwrap();
+///     let result = apply_function_matrix_with_shapes(&matrix, (1, 3), &cuda_env, function).unwrap();
 ///
 ///     assert_eq!(result[0], [5.0f32, 7.0f32, 9.0f32]);
 ///
 ///     module.free().unwrap();
 /// }
 /// ```
-pub unsafe fn apply_function_matrix_with_shapes(matrix: &Matrix<f32>, returned_shape: (usize, usize), cuda_env: &mut CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
+pub unsafe fn apply_function_matrix_with_shapes(matrix: &Matrix<f32>, returned_shape: (usize, usize), cuda_env: &CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
     let matrix_data = matrix.as_slice();
 
     let max_threads_per_block = cuda_env.get_max_threads_per_block();

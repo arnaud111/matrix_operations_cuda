@@ -282,7 +282,7 @@ impl CudaEnv {
     ///     cuda_env.free().unwrap();
     /// }
     /// ```
-    pub unsafe fn allocate(&mut self, size: usize) -> Result<CUdeviceptr, Box<dyn Error>> {
+    pub unsafe fn allocate(&self, size: usize) -> Result<CUdeviceptr, Box<dyn Error>> {
         let mut device_ptr: CUdeviceptr = CUdeviceptr::default();
         let result = cuMemAlloc_v2(&mut device_ptr, size);
 
