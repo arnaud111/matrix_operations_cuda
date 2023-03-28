@@ -382,6 +382,31 @@ pub unsafe fn scalar_div(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///     }
 /// }
 /// ```
+///
+/// # Errors
+///
+/// If matrices have different sizes
+///
+/// ```
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::add_matrices;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let matrix1 = matrix![[1.0f32, 2.00f32],
+///                           [3.00f32, 4.00f32]];
+///
+///     let matrix2 = matrix![[10.0f32, 11.00f32],
+///                           [12.00f32, 13.00f32],
+///                           [14.00f32, 15.00f32]];
+///
+///     let result = add_matrices(&matrix1, &matrix2, &mut cuda_env);
+///
+///     assert!(result.is_err());
+/// }
+/// ```
 pub unsafe fn add_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
     if matrix1.shape().0 != matrix2.shape().0 || matrix1.shape().1 != matrix2.shape().1 {
         return Err("Matrices must have the same size".into());
@@ -442,6 +467,30 @@ pub unsafe fn add_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_en
 ///     }
 /// }
 /// ```
+///
+/// # Errors
+///
+/// If the matrices have different sizes
+///
+/// ```
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::sub_matrices;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+///
+/// unsafe {
+///    let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let matrix1 = matrix![[1.0f32, 2.00f32],
+///                           [3.00f32, 4.00f32]];
+///
+///     let matrix2 = matrix![[10.0f32, 11.00f32],
+///                           [12.00f32, 13.00f32],
+///                           [14.00f32, 15.00f32]];
+///
+///     let result = sub_matrices(&matrix1, &matrix2, &mut cuda_env);
+///
+///     assert!(result.is_err());
+/// }
 pub unsafe fn sub_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
     if matrix1.shape().0 != matrix2.shape().0 || matrix1.shape().1 != matrix2.shape().1 {
         return Err("Matrices must have the same size".into());
@@ -500,6 +549,30 @@ pub unsafe fn sub_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_en
 ///     for i in 0..data1.len() {
 ///         assert_eq!(data_result[i], 2.0f32 * 1000.0f32);
 ///     }
+/// }
+/// ```
+///
+/// # Errors
+///
+/// If the number of columns of the first matrix is not equal to the number of rows of the second matrix, an error is returned.
+///
+/// ```
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::dot;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let matrix1 = matrix![[1.0f32, 2.00f32, 3.0f32],
+///                           [4.00f32, 5.00f32, 6.0f32]];
+///
+///     let matrix2 = matrix![[10.0f32, 11.00f32],
+///                           [12.00f32, 13.00f32]];
+///
+///     let result = dot(&matrix1, &matrix2, &mut cuda_env);
+///
+///     assert!(result.is_err());
 /// }
 /// ```
 pub unsafe fn dot(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
