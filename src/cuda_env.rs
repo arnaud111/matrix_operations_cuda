@@ -73,10 +73,10 @@ impl CudaEnv {
     ///     cuda_env.free().unwrap();
     /// }
     /// ```
-    pub unsafe fn get_max_threads_per_block(&self) -> usize {
+    pub unsafe fn get_max_threads_per_block(&self) -> u32 {
         let mut max_threads_per_block: i32 = 0;
         cuDeviceGetAttribute(&mut max_threads_per_block as *mut c_int, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, self.device);
-        max_threads_per_block as usize
+        max_threads_per_block as u32
     }
 
     /// Get max block per grid
@@ -97,10 +97,10 @@ impl CudaEnv {
     ///     cuda_env.free().unwrap();
     /// }
     /// ```
-    pub unsafe fn get_max_block_per_grid(&self) -> usize {
+    pub unsafe fn get_max_block_per_grid(&self) -> u32 {
         let mut max_block_per_grid: i32 = 0;
         cuDeviceGetAttribute(&mut max_block_per_grid as *mut c_int, CUdevice_attribute_enum::CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_X, self.device);
-        max_block_per_grid as usize
+        max_block_per_grid as u32
     }
 
     /// Get grid_size and block_size
@@ -126,17 +126,17 @@ impl CudaEnv {
     ///     cuda_env.free().unwrap();
     /// }
     /// ```
-    pub unsafe fn get_block_and_grid_dim(data_len: usize, max_threads: usize, max_block: usize) -> ((usize, usize, usize), (usize, usize, usize)) {
+    pub unsafe fn get_block_and_grid_dim(data_len: usize, max_threads: u32, max_block: u32) -> ((u32, u32, u32), (u32, u32, u32)) {
         if is_perfect_square(max_threads) {
-            let block_dim = (max_threads as f32).sqrt() as usize;
-            let grid_dim = (data_len as f32 / max_threads as f32).ceil() as usize;
+            let block_dim = (max_threads as f32).sqrt() as u32;
+            let grid_dim = (data_len as f32 / max_threads as f32).ceil() as u32;
 
             if grid_dim <= max_block {
                 return ((block_dim, block_dim, 1), (grid_dim, 1, 1));
             }
         } else {
             let block_dim = max_threads;
-            let grid_dim = (data_len as f32 / max_threads as f32).ceil() as usize;
+            let grid_dim = (data_len as f32 / max_threads as f32).ceil() as u32;
 
             if grid_dim <= max_block {
                 return ((block_dim, 1, 1), (grid_dim, 1, 1));
@@ -188,7 +188,7 @@ impl CudaEnv {
     ///     cuda_env.free().unwrap();
     /// }
     /// ```
-    pub unsafe fn launch(&self, function: CUfunction, args: &[*mut c_void], grid_size: (c_uint, c_uint, c_uint), bloc_size: (c_uint, c_uint, c_uint)) -> Result<(), Box<dyn Error>> {
+    pub unsafe fn launch(&self, function: CUfunction, args: &[*mut c_void], grid_size: (u32, u32, u32), bloc_size: (u32, u32, u32)) -> Result<(), Box<dyn Error>> {
 
         let result = cuLaunchKernel(
             function,
@@ -447,7 +447,7 @@ impl CudaEnv {
     }
 }
 
-fn is_perfect_square(num: usize) -> bool {
-    let sqrt_num = (num as f64).sqrt() as usize;
+fn is_perfect_square(num: u32) -> bool {
+    let sqrt_num = (num as f64).sqrt() as u32;
     return sqrt_num * sqrt_num == num;
 }
