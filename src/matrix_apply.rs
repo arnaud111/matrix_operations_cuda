@@ -5,6 +5,40 @@ use cuda_driver_sys::CUfunction;
 use matrix_operations::Matrix;
 use crate::CudaEnv;
 
+/// Runs a cuda function, as many times as there are values in the matrix, with a scalar as argument.
+///
+/// Signature of the function must be:
+///
+/// ```C
+/// extern "C" __global__ void function_name(const float* matrix, float* output, float scalar)
+/// ```
+///
+/// # Example
+///
+/// ```
+/// use cuda_driver_sys::*;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+/// use matrix_operations_cuda::cuda_module::CudaModule;
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::matrix_apply::apply_function_matrix_scalar;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let module = CudaModule::new(b"resources/kernel.ptx\0").unwrap();
+///     let function = module.load_function(b"add_scalar\0").unwrap();
+///
+///     let matrix = matrix![[1.0, 2.0],
+///                          [3.0, 4.0]];
+///
+///     let result = apply_function_matrix_scalar(&matrix, 2.0, &mut cuda_env, function).unwrap();
+///
+///     assert_eq!(result[0], [3.0, 4.0]);
+///     assert_eq!(result[1], [5.0, 6.0]);
+///
+///     module.free().unwrap();
+/// }
+/// ```
 pub unsafe fn apply_function_matrix_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
     let matrix_data = matrix.as_slice();
 
@@ -34,6 +68,42 @@ pub unsafe fn apply_function_matrix_scalar(matrix: &Matrix<f32>, scalar: f32, cu
     Matrix::from_slice(result.as_slice(), matrix.shape())
 }
 
+/// Runs a cuda function, as many times as there are values in the matrix.
+///
+/// Signature of the function must be:
+///
+/// ```C
+/// extern "C" __global__ void function_name(const float* matrix1, const float* matrix2, float* output)
+/// ```
+///
+/// # Example
+///
+/// ```
+/// use cuda_driver_sys::*;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+/// use matrix_operations_cuda::cuda_module::CudaModule;
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::matrix_apply::apply_function_two_matrices;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let module = CudaModule::new(b"resources/kernel.ptx\0").unwrap();
+///     let function = module.load_function(b"add\0").unwrap();
+///
+///     let matrix1 = matrix![[1.0, 2.0],
+///                           [3.0, 4.0]];
+///     let matrix2 = matrix![[1.0, 2.0],
+///                           [3.0, 4.0]];
+///
+///     let result = apply_function_two_matrices(&matrix1, &matrix2, &mut cuda_env, function).unwrap();
+///
+///     assert_eq!(result[0], [2.0, 4.0]);
+///     assert_eq!(result[1], [6.0, 8.0]);
+///
+///     module.free().unwrap();
+/// }
+/// ```
 pub unsafe fn apply_function_two_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_env: &mut CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
     let matrix1_data = matrix1.as_slice();
     let matrix2_data = matrix2.as_slice();
@@ -68,6 +138,43 @@ pub unsafe fn apply_function_two_matrices(matrix1: &Matrix<f32>, matrix2: &Matri
     Matrix::from_slice(result.as_slice(), matrix1.shape())
 }
 
+/// Runs a cuda function a number of times equal to the returned_shape.
+///
+/// Signature of the function must be:
+/// ```C
+/// extern "C" __global__ void function_name(const float* matrix1, const float* matrix2, float* output, int matrix1_row, int matrix1_col, int matrix2_row, int matrix2_col)
+/// ```
+///
+/// # Example
+///
+/// ```
+/// use cuda_driver_sys::*;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+/// use matrix_operations_cuda::cuda_module::CudaModule;
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::matrix_apply::apply_function_two_matrices_with_shapes;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let module = CudaModule::new(b"resources/kernel.ptx\0").unwrap();
+///     let function = module.load_function(b"dot\0").unwrap();
+///
+///     let matrix1 = matrix![[1.0f32, 2.00f32, 3.0f32],
+///                           [4.00f32, 5.00f32, 6.0f32]];
+///
+///     let matrix2 = matrix![[10.0f32, 11.00f32],
+///                           [12.00f32, 13.00f32],
+///                           [14.00f32, 15.00f32]];
+///
+///     let result = apply_function_two_matrices_with_shapes(&matrix1, &matrix2, (2, 2), &mut cuda_env, function).unwrap();
+///
+///     assert_eq!(result[0], [76.0f32, 82.0f32]);
+///     assert_eq!(result[1], [184.0f32, 199.0f32]);
+///
+///     module.free().unwrap();
+/// }
+/// ```
 pub unsafe fn apply_function_two_matrices_with_shapes(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, returned_shape: (usize, usize), cuda_env: &mut CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
     let matrix1_data = matrix1.as_slice();
     let matrix2_data = matrix2.as_slice();
