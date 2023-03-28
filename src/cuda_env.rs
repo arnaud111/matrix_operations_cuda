@@ -1,8 +1,55 @@
+//! This module contains the CudaEnv struct and its methods
+//!
+//! CudaEnv allow you interact with CUDA environment, like allocate memory, launch kernels, etc.
+//!
+//! # Usage
+//!
+//! ```
+//! use std::ffi::c_void;
+//! use std::mem::size_of;
+//! use matrix_operations_cuda::cuda_env::CudaEnv;
+//! use matrix_operations_cuda::cuda_module::CudaModule;
+//!
+//! let mut cuda_env: CudaEnv;
+//! unsafe {
+//!     cuda_env = CudaEnv::new(0, 0).unwrap();
+//!
+//!     let module = CudaModule::new(b"resources/kernel.ptx\0").unwrap();
+//!     let function = module.load_function(b"add_scalar\0").unwrap();
+//!
+//!     let data = [1.0f32, 2.0f32, 3.0f32, 4.0f32];
+//!     let device_ptr_in = cuda_env.allocate(data.len() * size_of::<f32>()).unwrap();
+//!     cuda_env.copy_host_to_device(device_ptr_in, &data).unwrap();
+//!
+//!     let device_ptr_out = cuda_env.allocate(data.len() * size_of::<f32>()).unwrap();
+//!     cuda_env.set_empty_device_data(device_ptr_out, data.len() * size_of::<f32>()).unwrap();
+//!
+//!     let scalar = 1.0f32;
+//!     let args = [
+//!         &device_ptr_in as *const _ as *mut c_void,
+//!         &device_ptr_out as *const _ as *mut c_void,
+//!         &scalar as *const _ as *mut c_void
+//!     ];
+//!
+//!     cuda_env.launch(function, &args, (1, 1, 1), (data.len() as u32, 1, 1)).unwrap();
+//!
+//!     let mut result = [0.0f32; 4];
+//!     cuda_env.copy_device_to_host(&mut result, device_ptr_out).unwrap();
+//!
+//!     assert_eq!(result, [2.0f32, 3.0f32, 4.0f32, 5.0f32]);
+//!
+//!     cuda_env.free_data(device_ptr_in).unwrap();
+//!     cuda_env.free_data(device_ptr_out).unwrap();
+//!     module.free().unwrap();
+//!     cuda_env.free().unwrap();
+//! }
+//! ```
 use std::error::Error;
 use std::ffi::{c_int, c_uint, c_void};
 use std::mem::size_of;
 use cuda_driver_sys::{CUcontext, cuCtxCreate_v2, cuCtxDestroy_v2, cuCtxPushCurrent_v2, cuCtxSynchronize, CUdevice, CUdevice_attribute_enum, cuDeviceGet, cuDeviceGetAttribute, CUdeviceptr, CUfunction, cuInit, cuLaunchKernel, cuMemAlloc_v2, cuMemcpyDtoH_v2, cuMemcpyHtoD_v2, cuMemFree_v2, cuMemsetD8_v2, CUresult};
 
+/// CUDA environment struct, used to interact with CUDA environment
 pub struct CudaEnv {
     ctx: CUcontext,
     device: CUdevice
@@ -437,7 +484,7 @@ impl CudaEnv {
     ///     cuda_env.free().unwrap();
     /// }
     /// ```
-    pub unsafe fn free(&mut self) -> Result<(), Box<dyn Error>> {
+    pub unsafe fn free(&self) -> Result<(), Box<dyn Error>> {
         cuCtxDestroy_v2(self.ctx);
         Ok(())
     }

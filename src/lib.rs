@@ -1,8 +1,8 @@
 use std::error::Error;
 use matrix_operations::Matrix;
-use crate::cuda_env::CudaEnv;
 use crate::matrix_apply::{apply_function_matrix_scalar, apply_function_two_matrices, apply_function_two_matrices_with_shapes};
-use crate::cuda_module::CudaModule;
+pub use crate::cuda_env::CudaEnv;
+pub use crate::cuda_module::CudaModule;
 
 pub mod cuda_module;
 pub mod cuda_env;

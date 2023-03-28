@@ -1,6 +1,24 @@
+//! Module for loading cuda modules
+//!
+//! # Usage
+//!
+//! ```
+//! use cuda_driver_sys::*;
+//! use matrix_operations_cuda::cuda_env::CudaEnv;
+//! use matrix_operations_cuda::cuda_module::CudaModule;
+//!
+//! unsafe {
+//!     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+//!     let module = CudaModule::new(b"resources/kernel.ptx\0").unwrap();
+//!     let function = module.load_function(b"add\0").unwrap();
+//!     module.free().unwrap();
+//!     cuda_env.free().unwrap();
+//! }
+//! ```
 use std::error::Error;
 use cuda_driver_sys::{CUfunction, CUmodule, cuModuleGetFunction, cuModuleLoad, cuModuleUnload, CUresult};
 
+/// Cuda module struct
 pub struct CudaModule {
     module: CUmodule,
 }

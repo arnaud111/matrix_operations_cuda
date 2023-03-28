@@ -1,3 +1,31 @@
+//! This module contains functions to apply your own cuda function to matrices.
+//!
+//! # Usage
+//!
+//! ```
+//! use cuda_driver_sys::*;
+//! use matrix_operations_cuda::cuda_env::CudaEnv;
+//! use matrix_operations_cuda::cuda_module::CudaModule;
+//! use matrix_operations::{Matrix, matrix};
+//! use matrix_operations_cuda::matrix_apply::apply_function_matrix;
+//!
+//! unsafe {
+//!     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+//!
+//!     let module = CudaModule::new(b"resources/kernel_test.ptx\0").unwrap();
+//!     let function = module.load_function(b"mul_by_2\0").unwrap();
+//!
+//!     let matrix = matrix![[1.0f32, 2.00f32, 3.0f32],
+//!                          [4.00f32, 5.00f32, 6.0f32]];
+//!
+//!     let result = apply_function_matrix(&matrix, &mut cuda_env, function).unwrap();
+//!
+//!     assert_eq!(result[0], [2.0f32, 4.0f32, 6.0f32]);
+//!     assert_eq!(result[1], [8.0f32, 10.0f32, 12.0f32]);
+//!
+//!     module.free().unwrap();
+//! }
+//! ```
 use std::error::Error;
 use std::ffi::c_void;
 use std::mem::size_of;
