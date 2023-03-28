@@ -61,7 +61,7 @@ pub mod matrix_apply;
 /// ```
 pub unsafe fn add_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
 
-    let module = CudaModule::new(b"resources/kernel.ptx\0")?;
+    let module = CudaModule::default()?;
     let function = module.load_function(b"add_scalar\0")?;
     let result = apply_function_matrix_scalar(matrix, scalar, cuda_env, function);
     module.free()?;
@@ -121,7 +121,7 @@ pub unsafe fn add_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &CudaEnv) 
 /// ```
 pub unsafe fn sub_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
 
-    let module = CudaModule::new(b"resources/kernel.ptx\0")?;
+    let module = CudaModule::default()?;
     let function = module.load_function(b"sub_scalar\0")?;
     let result = apply_function_matrix_scalar(matrix, scalar, cuda_env, function);
     module.free()?;
@@ -181,7 +181,7 @@ pub unsafe fn sub_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &CudaEnv) 
 /// ```
 pub unsafe fn mul_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
 
-    let module = CudaModule::new(b"resources/kernel.ptx\0")?;
+    let module = CudaModule::default()?;
     let function = module.load_function(b"mul_scalar\0")?;
     let result = apply_function_matrix_scalar(matrix, scalar, cuda_env, function);
     module.free()?;
@@ -241,7 +241,7 @@ pub unsafe fn mul_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &CudaEnv) 
 /// ```
 pub unsafe fn div_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
 
-    let module = CudaModule::new(b"resources/kernel.ptx\0")?;
+    let module = CudaModule::default()?;
     let function = module.load_function(b"div_scalar\0")?;
     let result= apply_function_matrix_scalar(matrix, scalar, cuda_env, function);
     module.free()?;
@@ -301,7 +301,7 @@ pub unsafe fn div_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &CudaEnv) 
 /// ```
 pub unsafe fn scalar_sub(matrix: &Matrix<f32>, scalar: f32, cuda_env: &CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
 
-    let module = CudaModule::new(b"resources/kernel.ptx\0")?;
+    let module = CudaModule::default()?;
     let function = module.load_function(b"scalar_sub\0")?;
     let result = apply_function_matrix_scalar(matrix, scalar, cuda_env, function);
     module.free()?;
@@ -361,7 +361,7 @@ pub unsafe fn scalar_sub(matrix: &Matrix<f32>, scalar: f32, cuda_env: &CudaEnv) 
 /// ```
 pub unsafe fn scalar_div(matrix: &Matrix<f32>, scalar: f32, cuda_env: &CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
 
-    let module = CudaModule::new(b"resources/kernel.ptx\0")?;
+    let module = CudaModule::default()?;
     let function = module.load_function(b"scalar_div\0")?;
     let result = apply_function_matrix_scalar(matrix, scalar, cuda_env, function);
     module.free()?;
@@ -454,7 +454,7 @@ pub unsafe fn add_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_en
         return Err("Matrices must have the same size".into());
     }
 
-    let module = CudaModule::new(b"resources/kernel.ptx\0")?;
+    let module = CudaModule::default()?;
     let function = module.load_function(b"add\0")?;
     let result = apply_function_two_matrices(matrix1, matrix2, cuda_env, function);
     module.free()?;
@@ -546,7 +546,7 @@ pub unsafe fn sub_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_en
         return Err("Matrices must have the same size".into());
     }
 
-    let module = CudaModule::new(b"resources/kernel.ptx\0")?;
+    let module = CudaModule::default()?;
     let function = module.load_function(b"sub\0")?;
     let result = apply_function_two_matrices(matrix1, matrix2, cuda_env, function);
     module.free()?;
@@ -638,7 +638,7 @@ pub unsafe fn dot(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_env: &CudaE
         return Err("The number of columns of the first matrix must be equal to the number of rows of the second matrix".into());
     }
 
-    let module = CudaModule::new(b"resources/kernel.ptx\0")?;
+    let module = CudaModule::default()?;
     let function = module.load_function(b"dot\0")?;
     let result = apply_function_two_matrices_with_shapes(matrix1, matrix2, (matrix1.shape().0, matrix2.shape().1), cuda_env, function);
     module.free()?;
