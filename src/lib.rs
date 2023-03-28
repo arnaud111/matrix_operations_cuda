@@ -1,13 +1,12 @@
 use std::error::Error;
-use std::ffi::c_void;
-use std::mem::size_of;
-use cuda_driver_sys::CUfunction;
-use matrix_operations::{Matrix, matrix};
+use matrix_operations::Matrix;
 use crate::cuda_env::CudaEnv;
+use crate::matrix_apply::{apply_function_matrix_scalar, apply_function_two_matrices, apply_function_two_matrices_with_shapes};
 use crate::cuda_module::CudaModule;
 
 pub mod cuda_module;
 pub mod cuda_env;
+pub mod matrix_apply;
 
 /// Add a scalar to a matrix
 ///
@@ -60,7 +59,7 @@ pub unsafe fn add_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"add_scalar\0")?;
-    function_scalar(matrix, scalar, cuda_env, function)
+    apply_function_matrix_scalar(matrix, scalar, cuda_env, function)
 }
 
 /// Subtract a scalar to a matrix
@@ -114,7 +113,7 @@ pub unsafe fn sub_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"sub_scalar\0")?;
-    function_scalar(matrix, scalar, cuda_env, function)
+    apply_function_matrix_scalar(matrix, scalar, cuda_env, function)
 }
 
 /// Multiply a scalar to a matrix
@@ -168,7 +167,7 @@ pub unsafe fn mul_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"mul_scalar\0")?;
-    function_scalar(matrix, scalar, cuda_env, function)
+    apply_function_matrix_scalar(matrix, scalar, cuda_env, function)
 }
 
 /// Divide a scalar to a matrix
@@ -222,7 +221,7 @@ pub unsafe fn div_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"div_scalar\0")?;
-    function_scalar(matrix, scalar, cuda_env, function)
+    apply_function_matrix_scalar(matrix, scalar, cuda_env, function)
 }
 
 /// Subtract scalar - matrix
@@ -276,7 +275,7 @@ pub unsafe fn scalar_sub(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"scalar_sub\0")?;
-    function_scalar(matrix, scalar, cuda_env, function)
+    apply_function_matrix_scalar(matrix, scalar, cuda_env, function)
 }
 
 /// Divide scalar / matrix
@@ -330,7 +329,7 @@ pub unsafe fn scalar_div(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"scalar_div\0")?;
-    function_scalar(matrix, scalar, cuda_env, function)
+    apply_function_matrix_scalar(matrix, scalar, cuda_env, function)
 }
 
 /// Add two matrices
@@ -384,10 +383,13 @@ pub unsafe fn scalar_div(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 /// }
 /// ```
 pub unsafe fn add_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
+    if matrix1.shape().0 != matrix2.shape().0 || matrix1.shape().1 != matrix2.shape().1 {
+        return Err("Matrices must have the same size".into());
+    }
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"add\0")?;
-    function_two_matrices(matrix1, matrix2, cuda_env, function)
+    apply_function_two_matrices(matrix1, matrix2, cuda_env, function)
 }
 
 /// Subtract two matrices
@@ -441,10 +443,13 @@ pub unsafe fn add_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_en
 /// }
 /// ```
 pub unsafe fn sub_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
+    if matrix1.shape().0 != matrix2.shape().0 || matrix1.shape().1 != matrix2.shape().1 {
+        return Err("Matrices must have the same size".into());
+    }
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"sub\0")?;
-    function_two_matrices(matrix1, matrix2, cuda_env, function)
+    apply_function_two_matrices(matrix1, matrix2, cuda_env, function)
 }
 
 /// Multiply two matrices
@@ -496,99 +501,13 @@ pub unsafe fn sub_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_en
 ///         assert_eq!(data_result[i], 2.0f32 * 1000.0f32);
 ///     }
 /// }
+/// ```
 pub unsafe fn dot(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
+    if matrix1.shape().1 != matrix2.shape().0 {
+        return Err("The number of columns of the first matrix must be equal to the number of rows of the second matrix".into());
+    }
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"dot\0")?;
-    function_tow_matrices_with_shapes(matrix1, matrix2, (matrix1.shape().0, matrix2.shape().1), cuda_env, function)
-}
-
-pub unsafe fn function_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
-    let mut matrix_data = matrix.as_slice();
-
-    let max_threads_per_block = cuda_env.get_max_threads_per_block();
-    let max_blocks_per_grid = cuda_env.get_max_block_per_grid();
-    let (block_dim, grid_dim) = CudaEnv::get_block_and_grid_dim(matrix_data.len(), max_threads_per_block, max_blocks_per_grid);
-
-    let matrix_data_ptr = cuda_env.allocate(matrix_data.len() * size_of::<f32>()).unwrap();
-    cuda_env.copy_host_to_device(matrix_data_ptr, matrix_data).unwrap();
-
-    let device_ptr_out = cuda_env.allocate(matrix_data.len() * size_of::<f32>()).unwrap();
-    cuda_env.set_empty_device_data(device_ptr_out, matrix_data.len() * size_of::<f32>()).unwrap();
-
-    let args = [
-        &matrix_data_ptr as *const _ as *mut c_void,
-        &device_ptr_out as *const _ as *mut c_void,
-        &scalar as *const _ as *mut c_void,
-    ];
-    cuda_env.launch(function, &args, grid_dim, block_dim).unwrap();
-
-    let mut result = vec![0.0f32; matrix_data.len()];
-    cuda_env.copy_device_to_host(&mut result, device_ptr_out).unwrap();
-
-    Matrix::from_slice(result.as_slice(), matrix.shape())
-}
-
-pub unsafe fn function_two_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_env: &mut CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
-    let mut matrix1_data = matrix1.as_slice();
-    let mut matrix2_data = matrix2.as_slice();
-
-    let max_threads_per_block = cuda_env.get_max_threads_per_block();
-    let max_blocks_per_grid = cuda_env.get_max_block_per_grid();
-    let (block_dim, grid_dim) = CudaEnv::get_block_and_grid_dim(matrix1_data.len(), max_threads_per_block, max_blocks_per_grid);
-
-    let matrix1_data_ptr = cuda_env.allocate(matrix1_data.len() * size_of::<f32>()).unwrap();
-    cuda_env.copy_host_to_device(matrix1_data_ptr, matrix1_data).unwrap();
-
-    let matrix2_data_ptr = cuda_env.allocate(matrix2_data.len() * size_of::<f32>()).unwrap();
-    cuda_env.copy_host_to_device(matrix2_data_ptr, matrix2_data).unwrap();
-
-    let device_ptr_out = cuda_env.allocate(matrix1_data.len() * size_of::<f32>()).unwrap();
-    cuda_env.set_empty_device_data(device_ptr_out, matrix1_data.len() * size_of::<f32>()).unwrap();
-
-    let args = [
-        &matrix1_data_ptr as *const _ as *mut c_void,
-        &matrix2_data_ptr as *const _ as *mut c_void,
-        &device_ptr_out as *const _ as *mut c_void,
-    ];
-    cuda_env.launch(function, &args, grid_dim, block_dim).unwrap();
-
-    let mut result = vec![0.0f32; matrix1_data.len()];
-    cuda_env.copy_device_to_host(&mut result, device_ptr_out).unwrap();
-
-    Matrix::from_slice(result.as_slice(), matrix1.shape())
-}
-
-pub unsafe fn function_tow_matrices_with_shapes(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, returned_shape: (usize, usize), cuda_env: &mut CudaEnv, function: CUfunction)  -> Result<Matrix<f32>, Box<dyn Error>> {
-    let mut matrix1_data = matrix1.as_slice();
-    let mut matrix2_data = matrix2.as_slice();
-
-    let max_threads_per_block = cuda_env.get_max_threads_per_block();
-    let max_blocks_per_grid = cuda_env.get_max_block_per_grid();
-    let (block_dim, grid_dim) = CudaEnv::get_block_and_grid_dim(returned_shape.0 * returned_shape.1, max_threads_per_block, max_blocks_per_grid);
-
-    let matrix1_data_ptr = cuda_env.allocate(matrix1_data.len() * size_of::<f32>()).unwrap();
-    cuda_env.copy_host_to_device(matrix1_data_ptr, matrix1_data).unwrap();
-
-    let matrix2_data_ptr = cuda_env.allocate(matrix2_data.len() * size_of::<f32>()).unwrap();
-    cuda_env.copy_host_to_device(matrix2_data_ptr, matrix2_data).unwrap();
-
-    let device_ptr_out = cuda_env.allocate(returned_shape.0 * returned_shape.1 * size_of::<f32>()).unwrap();
-    cuda_env.set_empty_device_data(device_ptr_out, returned_shape.0 * returned_shape.1 * size_of::<f32>()).unwrap();
-
-    let args = [
-        &matrix1_data_ptr as *const _ as *mut c_void,
-        &matrix2_data_ptr as *const _ as *mut c_void,
-        &device_ptr_out as *const _ as *mut c_void,
-        &matrix1.shape().0 as *const _ as *mut c_void,
-        &matrix1.shape().1 as *const _ as *mut c_void,
-        &matrix2.shape().0 as *const _ as *mut c_void,
-        &matrix2.shape().1 as *const _ as *mut c_void,
-    ];
-    cuda_env.launch(function, &args, grid_dim, block_dim).unwrap();
-
-    let mut result = vec![0.0f32; returned_shape.0 * returned_shape.1];
-    cuda_env.copy_device_to_host(&mut result, device_ptr_out).unwrap();
-
-    Matrix::from_slice(result.as_slice(), returned_shape)
+    apply_function_two_matrices_with_shapes(matrix1, matrix2, (matrix1.shape().0, matrix2.shape().1), cuda_env, function)
 }
