@@ -184,6 +184,8 @@ impl CudaEnv {
     ///
     ///     assert_eq!(result, [2.0f32, 3.0f32, 4.0f32, 5.0f32]);
     ///
+    ///     cuda_env.free_data(device_ptr_in).unwrap();
+    ///     cuda_env.free_data(device_ptr_out).unwrap();
     ///     module.free().unwrap();
     ///     cuda_env.free().unwrap();
     /// }
@@ -209,8 +211,6 @@ impl CudaEnv {
         if result != CUresult::CUDA_SUCCESS {
             return Err(format!("Error synchronizing kernel : {:?}", result).into());
         }
-
-        cuCtxSynchronize();
 
         Ok(())
     }
@@ -242,7 +242,6 @@ impl CudaEnv {
         if result != CUresult::CUDA_SUCCESS {
             return Err(format!("Error allocating memory : {:?}", result).into());
         }
-        cuCtxSynchronize();
 
         Ok(device_ptr)
     }
@@ -274,7 +273,6 @@ impl CudaEnv {
         if result != CUresult::CUDA_SUCCESS {
             return Err(format!("Error copy data into device : {:?}", result).into());
         }
-        cuCtxSynchronize();
 
         Ok(())
     }
@@ -317,6 +315,8 @@ impl CudaEnv {
     ///
     ///     assert_eq!(result, [2.0f32, 3.0f32, 4.0f32, 5.0f32]);
     ///
+    ///     cuda_env.free_data(device_ptr_in).unwrap();
+    ///     cuda_env.free_data(device_ptr_out).unwrap();
     ///     module.free().unwrap();
     ///     cuda_env.free().unwrap();
     /// }
@@ -327,7 +327,6 @@ impl CudaEnv {
         if result != CUresult::CUDA_SUCCESS {
             return Err(format!("Error copy data into device : {:?}", result).into());
         }
-        cuCtxSynchronize();
 
         Ok(())
     }
@@ -359,7 +358,6 @@ impl CudaEnv {
         if result != CUresult::CUDA_SUCCESS {
             return Err(format!("Error setting empty data into device : {:?}", result).into());
         }
-        cuCtxSynchronize();
 
         Ok(())
     }
@@ -391,7 +389,6 @@ impl CudaEnv {
         for device_ptr in device_ptrs {
             self.free_data(*device_ptr)?;
         }
-        cuCtxSynchronize();
         Ok(())
     }
 
@@ -421,7 +418,6 @@ impl CudaEnv {
         if result != CUresult::CUDA_SUCCESS {
             return Err(format!("Error freeing data : {:?}", result).into());
         }
-        cuCtxSynchronize();
 
         Ok(())
     }

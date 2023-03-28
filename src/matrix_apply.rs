@@ -28,6 +28,9 @@ pub unsafe fn apply_function_matrix_scalar(matrix: &Matrix<f32>, scalar: f32, cu
     let mut result = vec![0.0f32; matrix_data.len()];
     cuda_env.copy_device_to_host(&mut result, device_ptr_out).unwrap();
 
+    cuda_env.free_data(matrix_data_ptr)?;
+    cuda_env.free_data(device_ptr_out)?;
+
     Matrix::from_slice(result.as_slice(), matrix.shape())
 }
 
@@ -57,6 +60,10 @@ pub unsafe fn apply_function_two_matrices(matrix1: &Matrix<f32>, matrix2: &Matri
 
     let mut result = vec![0.0f32; matrix1_data.len()];
     cuda_env.copy_device_to_host(&mut result, device_ptr_out).unwrap();
+
+    cuda_env.free_data(matrix1_data_ptr)?;
+    cuda_env.free_data(matrix2_data_ptr)?;
+    cuda_env.free_data(device_ptr_out)?;
 
     Matrix::from_slice(result.as_slice(), matrix1.shape())
 }
@@ -92,6 +99,10 @@ pub unsafe fn apply_function_two_matrices_with_shapes(matrix1: &Matrix<f32>, mat
     let mut result = vec![0.0f32; returned_shape.0 * returned_shape.1];
     cuda_env.copy_device_to_host(&mut result, device_ptr_out).unwrap();
 
+    cuda_env.free_data(matrix1_data_ptr)?;
+    cuda_env.free_data(matrix2_data_ptr)?;
+    cuda_env.free_data(device_ptr_out)?;
+
     Matrix::from_slice(result.as_slice(), returned_shape)
 }
 
@@ -116,6 +127,9 @@ pub unsafe fn apply_function_matrix(matrix: &Matrix<f32>, cuda_env: &mut CudaEnv
 
     let mut result = vec![0.0f32; matrix_data.len()];
     cuda_env.copy_device_to_host(&mut result, device_ptr_out).unwrap();
+
+    cuda_env.free_data(matrix_data_ptr)?;
+    cuda_env.free_data(device_ptr_out)?;
 
     Matrix::from_slice(result.as_slice(), matrix.shape())
 }
@@ -143,6 +157,9 @@ pub unsafe fn apply_function_matrix_with_shapes(matrix: &Matrix<f32>, returned_s
 
     let mut result = vec![0.0f32; returned_shape.0 * returned_shape.1];
     cuda_env.copy_device_to_host(&mut result, device_ptr_out).unwrap();
+
+    cuda_env.free_data(matrix_data_ptr)?;
+    cuda_env.free_data(device_ptr_out)?;
 
     Matrix::from_slice(result.as_slice(), returned_shape)
 }

@@ -27,6 +27,8 @@ pub mod matrix_apply;
 ///
 ///     assert_eq!(result[0], [3.00f32, 4.00f32]);
 ///     assert_eq!(result[1], [5.00f32, 6.00f32]);
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 ///
@@ -53,13 +55,17 @@ pub mod matrix_apply;
 ///     for i in 0..data.len() {
 ///         assert_eq!(data_result[i], i as f32 + 2.0);
 ///     }
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 pub unsafe fn add_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"add_scalar\0")?;
-    apply_function_matrix_scalar(matrix, scalar, cuda_env, function)
+    let result = apply_function_matrix_scalar(matrix, scalar, cuda_env, function);
+    module.free()?;
+    result
 }
 
 /// Subtract a scalar to a matrix
@@ -81,6 +87,8 @@ pub unsafe fn add_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///
 ///     assert_eq!(result[0], [-1.00f32, 0.00f32]);
 ///     assert_eq!(result[1], [1.00f32, 2.00f32]);
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 ///
@@ -107,13 +115,17 @@ pub unsafe fn add_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///     for i in 0..data.len() {
 ///         assert_eq!(data_result[i], i as f32 - 2.0);
 ///     }
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 pub unsafe fn sub_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"sub_scalar\0")?;
-    apply_function_matrix_scalar(matrix, scalar, cuda_env, function)
+    let result = apply_function_matrix_scalar(matrix, scalar, cuda_env, function);
+    module.free()?;
+    result
 }
 
 /// Multiply a scalar to a matrix
@@ -135,6 +147,8 @@ pub unsafe fn sub_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///
 ///     assert_eq!(result[0], [2.00f32, 4.00f32]);
 ///     assert_eq!(result[1], [6.00f32, 8.00f32]);
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 ///
@@ -161,13 +175,17 @@ pub unsafe fn sub_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///     for i in 0..data.len() {
 ///         assert_eq!(data_result[i], i as f32 * 2.0);
 ///     }
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 pub unsafe fn mul_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"mul_scalar\0")?;
-    apply_function_matrix_scalar(matrix, scalar, cuda_env, function)
+    let result = apply_function_matrix_scalar(matrix, scalar, cuda_env, function);
+    module.free()?;
+    result
 }
 
 /// Divide a scalar to a matrix
@@ -189,6 +207,8 @@ pub unsafe fn mul_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///
 ///     assert_eq!(result[0], [0.50f32, 1.00f32]);
 ///     assert_eq!(result[1], [1.50f32, 2.00f32]);
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 ///
@@ -215,13 +235,17 @@ pub unsafe fn mul_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///     for i in 0..data.len() {
 ///         assert_eq!(data_result[i], i as f32 / 2.0);
 ///     }
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 pub unsafe fn div_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"div_scalar\0")?;
-    apply_function_matrix_scalar(matrix, scalar, cuda_env, function)
+    let result= apply_function_matrix_scalar(matrix, scalar, cuda_env, function);
+    module.free()?;
+    result
 }
 
 /// Subtract scalar - matrix
@@ -243,6 +267,8 @@ pub unsafe fn div_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///
 ///     assert_eq!(result[0], [1.00f32, 0.00f32]);
 ///     assert_eq!(result[1], [-1.00f32, -2.00f32]);
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 ///
@@ -269,13 +295,17 @@ pub unsafe fn div_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///     for i in 0..data.len() {
 ///         assert_eq!(data_result[i], 2.0 - i as f32);
 ///     }
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 pub unsafe fn scalar_sub(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"scalar_sub\0")?;
-    apply_function_matrix_scalar(matrix, scalar, cuda_env, function)
+    let result = apply_function_matrix_scalar(matrix, scalar, cuda_env, function);
+    module.free()?;
+    result
 }
 
 /// Divide scalar / matrix
@@ -297,6 +327,8 @@ pub unsafe fn scalar_sub(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///
 ///     assert_eq!(result[0], [2.00f32, 1.00f32]);
 ///     assert_eq!(result[1], [0.6666667f32, 0.5f32]);
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 ///
@@ -323,13 +355,17 @@ pub unsafe fn scalar_sub(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///     for i in 0..data.len() {
 ///         assert_eq!(data_result[i], 2.0 / i as f32);
 ///     }
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 pub unsafe fn scalar_div(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"scalar_div\0")?;
-    apply_function_matrix_scalar(matrix, scalar, cuda_env, function)
+    let result = apply_function_matrix_scalar(matrix, scalar, cuda_env, function);
+    module.free()?;
+    result
 }
 
 /// Add two matrices
@@ -354,6 +390,8 @@ pub unsafe fn scalar_div(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///
 ///     assert_eq!(result[0], [11.00f32, 13.00f32]);
 ///     assert_eq!(result[1], [15.00f32, 17.00f32]);
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 ///
@@ -380,6 +418,8 @@ pub unsafe fn scalar_div(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///     for i in 0..data.len() {
 ///         assert_eq!(data_result[i], 2.0 * i as f32);
 ///     }
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 ///
@@ -405,6 +445,8 @@ pub unsafe fn scalar_div(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
 ///     let result = add_matrices(&matrix1, &matrix2, &mut cuda_env);
 ///
 ///     assert!(result.is_err());
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 pub unsafe fn add_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
@@ -414,7 +456,9 @@ pub unsafe fn add_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_en
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"add\0")?;
-    apply_function_two_matrices(matrix1, matrix2, cuda_env, function)
+    let result = apply_function_two_matrices(matrix1, matrix2, cuda_env, function);
+    module.free()?;
+    result
 }
 
 /// Subtract two matrices
@@ -439,6 +483,8 @@ pub unsafe fn add_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_en
 ///
 ///     assert_eq!(result[0], [-9.0f32, -9.00f32]);
 ///     assert_eq!(result[1], [-9.00f32, -9.00f32]);
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 ///
@@ -465,6 +511,8 @@ pub unsafe fn add_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_en
 ///     for i in 0..data.len() {
 ///         assert_eq!(data_result[i], 0.0f32);
 ///     }
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 ///
@@ -490,6 +538,8 @@ pub unsafe fn add_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_en
 ///     let result = sub_matrices(&matrix1, &matrix2, &mut cuda_env);
 ///
 ///     assert!(result.is_err());
+///
+///     cuda_env.free().unwrap();
 /// }
 pub unsafe fn sub_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
     if matrix1.shape().0 != matrix2.shape().0 || matrix1.shape().1 != matrix2.shape().1 {
@@ -498,7 +548,9 @@ pub unsafe fn sub_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_en
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"sub\0")?;
-    apply_function_two_matrices(matrix1, matrix2, cuda_env, function)
+    let result = apply_function_two_matrices(matrix1, matrix2, cuda_env, function);
+    module.free()?;
+    result
 }
 
 /// Multiply two matrices
@@ -524,6 +576,8 @@ pub unsafe fn sub_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_en
 ///
 ///     assert_eq!(result[0], [76.0f32, 82.0f32]);
 ///     assert_eq!(result[1], [184.0f32, 199.0f32]);
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 ///
@@ -549,6 +603,8 @@ pub unsafe fn sub_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_en
 ///     for i in 0..data1.len() {
 ///         assert_eq!(data_result[i], 2.0f32 * 1000.0f32);
 ///     }
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 ///
@@ -573,6 +629,8 @@ pub unsafe fn sub_matrices(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_en
 ///     let result = dot(&matrix1, &matrix2, &mut cuda_env);
 ///
 ///     assert!(result.is_err());
+///
+///     cuda_env.free().unwrap();
 /// }
 /// ```
 pub unsafe fn dot(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
@@ -582,5 +640,7 @@ pub unsafe fn dot(matrix1: &Matrix<f32>, matrix2: &Matrix<f32>, cuda_env: &mut C
 
     let module = CudaModule::new(b"resources/kernel.ptx\0")?;
     let function = module.load_function(b"dot\0")?;
-    apply_function_two_matrices_with_shapes(matrix1, matrix2, (matrix1.shape().0, matrix2.shape().1), cuda_env, function)
+    let result = apply_function_two_matrices_with_shapes(matrix1, matrix2, (matrix1.shape().0, matrix2.shape().1), cuda_env, function);
+    module.free()?;
+    result
 }
