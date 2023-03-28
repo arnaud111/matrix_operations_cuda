@@ -225,6 +225,114 @@ pub unsafe fn div_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaE
     function_scalar(matrix, scalar, cuda_env, function)
 }
 
+/// Subtract scalar - matrix
+///
+/// # Example
+///
+/// ```
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::scalar_sub;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let matrix = matrix![[1.0f32, 2.00f32],
+///                          [3.00f32, 4.00f32]];
+///
+///     let result = scalar_sub(&matrix, 2.0, &mut cuda_env).unwrap();
+///
+///     assert_eq!(result[0], [1.00f32, 0.00f32]);
+///     assert_eq!(result[1], [-1.00f32, -2.00f32]);
+/// }
+/// ```
+///
+/// Works with big matrices:
+///
+/// ```
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::scalar_sub;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let mut data = vec![0.0f32; 1000000];
+///     for i in 0..data.len() {
+///         data[i] = i as f32;
+///     }
+///
+///     let matrix = Matrix::new(data.clone(), (1000, 1000)).unwrap();
+///
+///     let result = scalar_sub(&matrix, 2.0, &mut cuda_env).unwrap();
+///
+///     let data_result = result.as_slice();
+///     for i in 0..data.len() {
+///         assert_eq!(data_result[i], 2.0 - i as f32);
+///     }
+/// }
+/// ```
+pub unsafe fn scalar_sub(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
+
+    let module = CudaModule::new(b"resources/kernel.ptx\0")?;
+    let function = module.load_function(b"scalar_sub\0")?;
+    function_scalar(matrix, scalar, cuda_env, function)
+}
+
+/// Divide scalar / matrix
+///
+/// # Example
+///
+/// ```
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::scalar_div;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let matrix = matrix![[1.0f32, 2.00f32],
+///                          [3.00f32, 4.00f32]];
+///
+///     let result = scalar_div(&matrix, 2.0, &mut cuda_env).unwrap();
+///
+///     assert_eq!(result[0], [2.00f32, 1.00f32]);
+///     assert_eq!(result[1], [0.6666667f32, 0.5f32]);
+/// }
+/// ```
+///
+/// Works with big matrices:
+///
+/// ```
+/// use matrix_operations::{Matrix, matrix};
+/// use matrix_operations_cuda::scalar_div;
+/// use matrix_operations_cuda::cuda_env::CudaEnv;
+///
+/// unsafe {
+///     let mut cuda_env = CudaEnv::new(0, 0).unwrap();
+///
+///     let mut data = vec![0.0f32; 1000000];
+///     for i in 0..data.len() {
+///         data[i] = i as f32;
+///     }
+///
+///     let matrix = Matrix::new(data.clone(), (1000, 1000)).unwrap();
+///
+///     let result = scalar_div(&matrix, 2.0, &mut cuda_env).unwrap();
+///
+///     let data_result = result.as_slice();
+///     for i in 0..data.len() {
+///         assert_eq!(data_result[i], 2.0 / i as f32);
+///     }
+/// }
+/// ```
+pub unsafe fn scalar_div(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv) -> Result<Matrix<f32>, Box<dyn Error>> {
+
+    let module = CudaModule::new(b"resources/kernel.ptx\0")?;
+    let function = module.load_function(b"scalar_div\0")?;
+    function_scalar(matrix, scalar, cuda_env, function)
+}
+
 unsafe fn function_scalar(matrix: &Matrix<f32>, scalar: f32, cuda_env: &mut CudaEnv, function: CUfunction) -> Result<Matrix<f32>, Box<dyn Error>> {
     let mut matrix_data = matrix.as_slice();
 
