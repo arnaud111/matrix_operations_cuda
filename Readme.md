@@ -34,7 +34,7 @@
 
  This crate allow to use common operations using cuda:
 
- ```
+ ```rust
  use matrix_operations::matrix;
  use matrix_operations_cuda::{add_matrices, add_scalar, CudaEnv, dot, sub_matrices};
 
@@ -73,7 +73,7 @@
 
  You also can import your own module from a `.ptx` file or from a module data as `Vec<u8>`
 
- ```
+ ```rust
  use cuda_driver_sys::*;
  use matrix_operations_cuda::cuda_env::CudaEnv;
  use matrix_operations_cuda::cuda_module::CudaModule;
