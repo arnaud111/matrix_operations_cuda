@@ -1,7 +1,13 @@
 [package]
 name = "matrix_operations_cuda"
 version = "0.1.0"
+authors = ["arnaud111"]
 edition = "2021"
+description = "A library to perform matrix operations using cuda"
+license = "MIT"
+repository = "https://github.com/arnaud111/matrix_operations_cuda"
+categories = ["algorithms", "mathematics", "memory-management", "concurrency"]
+keywords = ["matrix", "cuda", "mathematics"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
