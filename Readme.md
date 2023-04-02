@@ -1,6 +1,6 @@
  # Matrix_Operations_Cuda
-[![Crates.io](https://img.shields.io/crates/v/matrix_operations.svg)](https://crates.io/crates/matrix_operations_cuda)
-[![Docs.rs](https://docs.rs/matrix_operations/badge.svg)](https://docs.rs/matrix_operations_cuda)
+[![Crates.io](https://img.shields.io/crates/v/matrix_operations_cuda.svg)](https://crates.io/crates/matrix_operations_cuda)
+[![Docs.rs](https://docs.rs/matrix_operations_cuda/badge.svg)](https://docs.rs/matrix_operations_cuda)
 
  Matrix_Operations_Cuda is a Rust crate for performing matrix operations using CUDA
 
