@@ -1,6 +1,6 @@
 [package]
 name = "matrix_operations_cuda"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["arnaud111"]
 edition = "2021"
 description = "A library to perform matrix operations using cuda"

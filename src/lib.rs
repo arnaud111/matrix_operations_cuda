@@ -36,27 +36,22 @@
 //! use matrix_operations::matrix;
 //! use matrix_operations_cuda::{add_matrices, add_scalar, CudaEnv, CudaModule, dot, sub_matrices};
 //!
-//! println!("test");
 //! let cuda_env;
 //! unsafe {
 //!     cuda_env = CudaEnv::new(0, 0).unwrap();
 //! }
-//! println!("test");
 //! let module;
 //! unsafe {
 //!     module = CudaModule::default().unwrap();
 //! }
-//! println!("test");
 //!
 //! let m1 = matrix![[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]];
 //! let m2 = matrix![[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]];
 //!
-//! println!("test");
 //! let m3;
 //! unsafe {
 //!     m3 = dot(&m1, &m2, &cuda_env, &module).unwrap();
 //! }
-//! println!("test");
 //!
 //! assert_eq!(m3[0], [22.0, 28.0]);
 //! assert_eq!(m3[1], [49.0, 64.0]);
@@ -66,7 +61,6 @@
 //!     m4 = add_scalar(&m3, 10.0, &cuda_env, &module).unwrap();
 //! }
 //!
-//! println!("test");
 //! assert_eq!(m4[0], [32.0, 38.0]);
 //! assert_eq!(m4[1], [59.0, 74.0]);
 //!
@@ -75,7 +69,6 @@
 //!     m5 = sub_matrices(&m4, &m3, &cuda_env, &module).unwrap();
 //! }
 //!
-//! println!("test");
 //! assert_eq!(m5[0], [10.0, 10.0]);
 //! assert_eq!(m5[1], [10.0, 10.0]);
 //!

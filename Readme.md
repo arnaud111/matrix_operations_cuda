@@ -12,7 +12,7 @@
 
  ```toml
  [dependencies]
- matrix_operations_cuda = "0.1.0"
+ matrix_operations_cuda = "0.1.2"
  ```
 
  - ### Matrix_Operations
@@ -23,7 +23,7 @@
 
  ```toml
  [dependencies]
- matrix_operations = "0.1.3"
+ matrix_operations = "0.1.4"
  ```
 
  - ### CUDA
